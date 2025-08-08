@@ -5,7 +5,8 @@ An application to showcase and execute Splashkit games
 
 + Install the [SplashKit](https://splashkit.io) SDK using the [guide](https://splashkit.io/articles/installation/)
 
-## Pre-requisites (mingw32 / Windows)
+## Pre-requisites (Windows with mingw32 or mingw64)
+
 
 + Install `make` using `pacman -S make`
 

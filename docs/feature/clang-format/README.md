@@ -25,7 +25,7 @@ Subsequent builds (as you change code) can be completed by using just `make`. If
 + Run the application ```./test```
 
 ## Contributing code and running the code formatter
-Have a read of [CONTRIBUTING.md](CONTRIBUTING.md) to see the general code style conventions followed throughout the project.
+Have a read of [CONTRIBUTING.md](../../../CONTRIBUTING.md) to see the general code style conventions followed throughout the project.
 
 Automatic code formatting is supported using `clang-format` (you may need to install this if you want to use it). 
 

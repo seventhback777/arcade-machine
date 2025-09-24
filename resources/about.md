@@ -1,0 +1,1 @@
+The resource file stored when the machine starts running. Provide resources for rendering, playback, etc. It is worth mentioning bundles, which can integrate different versions of resources to meet various needs. Among them, resources.txt is a related integration.

@@ -1,0 +1,1 @@
+Previously, generate-stats.sh generated the target folder of the file, counted the number of cpp lines, contributors, commits, etc

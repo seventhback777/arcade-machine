@@ -1,1 +1,1 @@
-Here is the specific implementation file of the previous header file. What they are doing is the same as the purpose of the header file, so the implementation details will not be delved into
+Here is the specific implementation file of the previous header file. What they are doing is the same as the purpose of the header file, so the implementation details will not be delved into.

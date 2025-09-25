@@ -1,23 +1,23 @@
 1.AboutScreen.h
-The developer contribution list page will scroll through the contribution information of developers and obtain information from the data collected by the previous statistics script
+The developer contribution list page will scroll through the contribution information of developers and obtain information from the data collected by the previous statistics script.
 
 2.ArcadeMachine.h
-The master control type of the entire "arcade front-end program" - organizing the startup animation, main menu, game list, option menu, button clicks, sounds and layout all together
+The master control type of the entire "arcade front-end program" - organizing the startup animation, main menu, game list, option menu, button clicks, sounds and layout all together.
 
 3.Audio.h
-The music player plays the main menu music by default upon startup. It can switch songs and adjust the volume, ensuring that games/menus have a unified music management interface
+The music player plays the main menu music by default upon startup. It can switch songs and adjust the volume, ensuring that games/menus have a unified music management interface.
 
 4.Button.h
-The parent class of all buttons provides the basic attributes and behaviors for the buttons
+The parent class of all buttons provides the basic attributes and behaviors for the buttons.
 
 5.ButtonNode.h
 Button nodes are used to form a bidirectional circular linked list of a bunch of buttons. This enables the menu cursor to move in a loop between buttons, just like in a real arcade machine. You can push in one direction without going all the way, making there no sense of boundaries.
 
 6.cell.h
-The grid cell, as the smallest drawing unit in the machine, supports storing four types: EMPTY,BMP,SPT(Animation Sprite), and BTN. It also supports functions such as center alignment, how large this cell should occupy (merging other base cells), etc. A very important drawing unit
+The grid cell, as the smallest drawing unit in the machine, supports storing four types: EMPTY,BMP,SPT(Animation Sprite), and BTN. It also supports functions such as center alignment, how large this cell should occupy (merging other base cells), etc. A very important drawing unit.
 
 7.ConfigData.h
-A very important header file is the "Data model manual" for each game. It is through this that the menu system knows which games are available and how to start them. Including: All metadata of each game
+A very important header file is the "Data model manual" for each game. It is through this that the menu system knows which games are available and how to start them. Including: All metadata of each game.
 
 Basic information: m_id
 
@@ -50,10 +50,10 @@ Executable file path
 It can open the config.txt of each game, read this information from it (here we have to mention config.txt, which is the information that every game uploader must provide), and then convert this information from text information into object attributes for the convenience of using it for config later.
 
 8.Configuration.h
-Global configuration constants, uniformly managing environment-related parameters such as "resolution, path separator, CPU architecture, operating system type, and executable file extension"
+Global configuration constants, uniformly managing environment-related parameters such as "resolution, path separator, CPU architecture, operating system type, and executable file extension".
 
 9.Database.h
-The database encapsulation for arcade menu/statistics provides common operation methods such as table creation, addition, deletion, modification, query, and printing, making it convenient for direct invocation elsewhere
+The database encapsulation for arcade menu/statistics provides common operation methods such as table creation, addition, deletion, modification, query, and printing, making it convenient for direct invocation elsewhere.
 
 10.GameData.h
 To record each round encapsulation, wrote in the database a is fixed: gameData, it exists fields: gamaName, startTime, endTime, rating, highScore. It will even provide aggregated statistics: average score, total duration, highest score, etc.
@@ -79,45 +79,45 @@ Call getConfigFiles(string dir), specify the path for it ("./games/games"), scan
 Regarding the specified path ("./games/games"), it is necessary to mention the special directory of the game repository. For the storage of games, a special format must be met. It must be written as config.txt and then uniformly placed in the "games" folder. Only in this way can vector<ConfigData> ConfigDataList() correctly find the game and load the relevant configuration. That's why it is hard-coded here.
 
 (4)void resetScreen(GridLayout grid)
-A demonstration tool for drawing grids for testing
+A demonstration tool for drawing grids for testing.
 
 (5) void gridLayoutExample()
 Open a 600x800 window without loading appContainer.png. Create a 5x5 grid and conduct several layout experiments.
 
 14.Menu.h
-The desktop of the arcade machine
+The desktop of the arcade machine.
 
 15.MenuButton.h
-The button class of the menu interface inherits from the previous Button
+The button class of the menu interface inherits from the previous Button.
 
 16.Option.h
-The "Settings/Options Menu" of the arcade machine, the Settings interface
+The "Settings/Options Menu" of the arcade machine, the Settings interface.
 
 17.OptionButton.h
-A dedicated button for the Settings menu
+A dedicated button for the Settings menu.
 
 18.Process.h
 Start an external process (basically a game) on Linux/ Raspberry PI and check if it is still running.
 1.spawnProcess(std::string directory,std::string fileName)
 Generate a new process
 Parameters: The first one is placed in the directory where the running file is located, and the second one is placed in the file name of the running program.
-Return value: pid_t(ID of the new process)
+Return value: pid_t(ID of the new process).
 2.processRunning(pid_t processId)
-Check if the process is alive and return T/F
+Check if the process is alive and return T/F.
 
-Why is this file necessary? Because the arcade machine needs to continuously listen to whether the application is still running, if the program is not running, it needs to exit and return to the main menu
+Why is this file necessary? Because the arcade machine needs to continuously listen to whether the application is still running, if the program is not running, it needs to exit and return to the main menu.
 
 19.Rating.h
-Scoring component
+Scoring component.
 
 20.Selector.h
-Cursor selector component
+Cursor selector component.
 
 21.Splashscreen.h
-The opening animation component plays the logo and provides an opening animation
+The opening animation component plays the logo and provides an opening animation.
 
 22.Table.h
-The description of a table in the Database provides a blueprint for the tables in the previous database
+The description of a table in the Database provides a blueprint for the tables in the previous database.
 
 23.Tip.h
-The screen prompts the implementation of bubbles/small pop-up Windows, which will automatically disappear after a few seconds
+The screen prompts the implementation of bubbles/small pop-up Windows, which will automatically disappear after a few seconds.

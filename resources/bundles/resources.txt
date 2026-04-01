@@ -62,10 +62,10 @@ SOUND,intro_start,completed.wav
 
 // Music
 MUSIC,music_mainmenu,main_menu.mp3
-MUSIC, 1, 1.mp3
-MUSIC, 2, 2.mp3
-MUSIC, 3, 3.mp3
-MUSIC, music_about, insert-no-coins.ogg
+MUSIC,1,1.mp3
+MUSIC,2,2.mp3
+MUSIC,3,3.mp3
+MUSIC,music_about,insert-no-coins.ogg
 
 // Animations
 ANIM,info-script,information.txt

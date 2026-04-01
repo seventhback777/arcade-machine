@@ -2,6 +2,25 @@
 
 Option::Option() {}
 
+Option::~Option()
+{
+    // Free ButtonNode objects only — Button pointers are owned by m_optionsBtns,
+    // so do NOT delete button inside each node here (would double-free).
+    if (m_optionsButtonNode) {
+        ButtonNode *current = m_optionsButtonNode->getNext();
+        while (current != m_optionsButtonNode) {
+            ButtonNode *next = current->getNext();
+            delete current;
+            current = next;
+        }
+        delete m_optionsButtonNode;
+        m_optionsButtonNode = nullptr;
+    }
+    // Free Button objects via m_optionsBtns (the single owner)
+    for (auto& btn : m_optionsBtns) delete btn;
+    m_optionsBtns.clear();
+}
+
 void Option::createOptionsButtons()
 {
     // Initialise grid 
@@ -70,7 +89,7 @@ void Option::drawOptionsMenu()
     this->m_optionsButtonNode = this->m_selectorOptionsMenu.checkKeyInput(this->m_optionsButtonNode);
 
     int x_pos = home.button->x() + (sprite_width(home.button->btn()) - 40);
-    int y_pos;
+    int y_pos = home.button->y() + ((sprite_width(home.button->btn())*0.5)-30); // default to home position
 
          if (this->m_optionsButtonNode->button->color() == "opts_home")    y_pos = home.button->y() + ((sprite_width(home.button->btn())*0.5)-30);
     else if (this->m_optionsButtonNode->button->color() == "opts_sound")   y_pos = sound.button->y() + ((sprite_width(sound.button->btn())*0.5)-30);

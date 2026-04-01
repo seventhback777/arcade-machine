@@ -1,0 +1,27 @@
+[Bundle] resource bundle loaded successfully
+[Bundle] all bitmaps and fonts loaded successfully
+[Git] Connecting... (attempt 1/3)
+[Git] pulling: https://github.com/thoth-tech/arcade-games.git → games
+From https://github.com/thoth-tech/arcade-games
+ * branch            HEAD       -> FETCH_HEAD
+[Git] pull succeeded: games
+[Git] games loaded successfully on attempt 1
+[Helper] found 9 config files in ./games/games
+[Config] no builds/ directory: ./games/games/2dRacer
+[Config] Below The Surface supports: Linux ARM, Linux x86, Windows
+[Config] no builds/ directory: ./games/games/car-race
+[Config] Homemade Pong supports: Linux ARM, Linux x86, Windows
+[Config] no builds/ directory: ./games/games/Pingpong
+[Config] builds/ is empty: ./games/games/Runner_Dash
+[Config] no builds/ directory: ./games/games/SkySurge
+[Config] no builds/ directory: ./games/games/splashkit mario
+[Config] Venture Adventure supports: Linux ARM, Linux x86, Windows
+[Menu] image loaded: ./games/games/2dRacer/2D-Title.jpg
+[Menu] image loaded: ./games/games/BelowTheSurface/title_card.png
+[Menu] image loaded: ./games/games/car-race/images/car-race-config-image.png
+[Menu] image loaded: ./games/games/HomemadePong/images/pong.png
+[Menu] image loaded: ./games/games/Pingpong/images/Pingpong-config-image.png
+[Menu] image loaded: ./games/games/Runner_Dash/TitleImage.jpg
+[Menu] image loaded: ./games/games/SkySurge/images/SkySurge-config-image.png
+[Menu] image loaded: ./games/games/splashkit mario/sk-mario-config-image.png
+[Menu] image loaded: ./games/games/VentureAdventure/Resources/images/VenAd.png

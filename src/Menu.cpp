@@ -6,9 +6,19 @@
 #endif
 
 #include <cmath>
+#include <iostream>
+
+#if __cplusplus >= 201703L
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
 
 Menu::Menu()
 {
+    this->m_tip = nullptr;
     this->m_db = new Database();
     Table *gameDataTable = new Table("gameData", {{"gameName", "TEXT"}, {"startTime", "TEXT"}, {"endTime", "TEXT"}, {"rating", "TEXT"}, {"highScore", "TEXT"}});
     this->m_db->createTable(gameDataTable);
@@ -17,6 +27,7 @@ Menu::Menu()
 
 Menu::Menu(std::vector<ConfigData> configs)
 {
+    this->m_tip = nullptr;
     this->m_games = configs;
     this->m_db = new Database();
     Table *gameDataTable = new Table("gameData", {{"gameName", "TEXT"}, {"startTime", "TEXT"}, {"endTime", "TEXT"}, {"rating", "TEXT"}, {"highScore", "TEXT"}});
@@ -31,6 +42,24 @@ Menu::~Menu()
 {
     std::cout << "Destructor called on Menu\n";
     std::cout << "Menu: clearing memory...\n";
+
+    // Walk the circular doubly-linked list and free every ButtonNode and its Button.
+    // getButtons() always returned an empty m_btns, so ArcadeMachine's destructor
+    // never freed these — they must be freed here.
+    if (m_button) {
+        ButtonNode *current = m_button->getNext();
+        while (current != m_button) {
+            ButtonNode *next = current->getNext();
+            delete current->button;
+            delete current;
+            current = next;
+        }
+        // Delete the head node last (after all others are gone)
+        delete m_button->button;
+        delete m_button;
+        m_button = nullptr;
+    }
+
     delete m_db;
     delete m_tip;
 }
@@ -80,15 +109,30 @@ void Menu::createButtons()
 
     for (int i = 0; i < m_gameImages.size(); i++)
     {
+        std::string image = m_gameImages[i];
+
+        // Load the game thumbnail bitmap with specific error reporting.
+        if (m_games[i].image().empty()) {
+            std::cerr << "[Menu] image load failed (empty path): " << m_games[i].title() << std::endl;
+        } else if (!fs::exists(image)) {
+            std::cerr << "[Menu] image load failed (file not found): " << image << std::endl;
+        } else {
+            if (!has_bitmap(image))
+                load_bitmap(image, image);
+            if (!has_bitmap(image))
+                std::cerr << "[Menu] image load failed (splashkit error): " << image << std::endl;
+            else
+                std::cerr << "[Menu] image loaded: " << image << std::endl;
+        }
+
         if (i == 0)
         {
-            this->m_button = new ButtonNode(new GameScreenButton(Button::GAME, m_gameImages[0]));
+            this->m_button = new ButtonNode(new GameScreenButton(Button::GAME, image));
             this->m_button->config = m_games[0];
             this->m_button->stats = gameStats.getStats(this->m_db, m_games[0].title());
         }
         else
         {
-            std::string image = m_gameImages[i];
             this->m_button->addBefore(new ButtonNode(new GameScreenButton(Button::GAME, image)));
             this->m_button->getPrev()->config = m_games[i];
             this->m_button->getPrev()->stats = gameStats.getStats(this->m_db, m_games[i].title());
@@ -146,6 +190,15 @@ void Menu::carouselHandler()
 
     checkGameExit();
 
+    // ESC while in game: kill the game process
+    // Use key_typed() directly since game window may have stolen focus from selector
+    if (m_inGame && key_typed(ESCAPE_KEY)) {
+        std::cerr << "[Menu] user pressed ESC, killing game (PID: " << this->m_processId << ")" << std::endl;
+        killProcess(this->m_processId);
+        m_launching = false;
+        m_inGame = false;
+    }
+
     if (this->m_button)
     {
         if (this->m_action == "escape" && m_overlayActive)
@@ -156,16 +209,6 @@ void Menu::carouselHandler()
         {
             if (m_overlayActive)
             {
-
-#ifdef _WIN32
-                // Get game path
-                m_gamePath = (this->m_button->config.folder() + "/" + this->m_button->config.win_exe()).c_str();
-                // Get executable name
-                m_gameExe = strdup(this->m_button->config.win_exe().c_str());
-                // Get game directory
-                m_gameDir = this->m_button->config.folder().c_str();
-#endif
-
                 // Set the center of the game
                 this->m_x = m_centreX;
                 this->m_y = m_centreY;
@@ -189,15 +232,19 @@ void Menu::carouselHandler()
                 m_gameData.setGameName(this->m_button->config.title());
 
 #ifdef _WIN32
-                // Get game path
-                m_gamePath = (this->m_button->config.folder() + "/" + this->m_button->config.win_exe()).c_str();
-                // Get executable name
-                m_gameExe = strdup(this->m_button->config.win_exe().c_str());
-                // Get game directory
-                m_gameDir = this->m_button->config.folder().c_str();
+                {
+                    // Build persistent strings before passing to CreateProcessA.
+                    // Storing .c_str() of a temporary causes a dangling pointer —
+                    // the temporary is destroyed at the end of the assignment statement.
+                    std::string gamePath   = this->m_button->config.folder() + "/" + this->m_button->config.win_exe();
+                    std::string gameDir    = this->m_button->config.folder();
+                    // CreateProcessA may write into lpCommandLine, so use a mutable buffer.
+                    std::string gameExeStr = this->m_button->config.win_exe();
+                    std::vector<char> gameExeBuf(gameExeStr.begin(), gameExeStr.end());
+                    gameExeBuf.push_back('\0');
 
-                // Call method to open game executable
-                startGame(m_gamePath, m_gameExe, m_gameDir);
+                    startGame(gamePath.c_str(), gameExeBuf.data(), gameDir.c_str());
+                }
 #else
                 try {
                     startGame(this->m_button->config.getExecutablePath());
@@ -238,8 +285,26 @@ void Menu::drawMenuPage()
 
     if (m_overlayActive && !m_menuSliding)
         drawOverlay(m_button->config, m_button->stats);
-    if (!m_inGame)
+    if (!m_inGame && this->m_tip)
         this->m_tip->draw();
+
+    // Show launching animation until game process exits.
+    if (m_inGame && m_launching) {
+        int dots = (current_ticks() / 400) % 4;
+        std::string anim = std::string(dots, '.');
+        std::string msg = "Starting " + this->m_button->config.title() + anim;
+        draw_text(msg, COLOR_WHITE, "font_text", 40,
+                  m_centreX - 200, m_centreY - 20);
+    }
+
+    // Show launch error message (fork failure or crash).
+    if (!m_inGame && !m_launchError.empty()) {
+        draw_text(m_launchError, COLOR_RED, "font_text", 30,
+                  m_centreX - 300, m_centreY - 20);
+        // Clear after 3 seconds so the menu returns to normal.
+        if (current_ticks() - m_launchTime > 3000)
+            m_launchError = "";
+    }
 
     updateCarousel();
     carouselHandler();
@@ -452,8 +517,22 @@ void Menu::startGame(LPCSTR gamePath,LPSTR gameExe, LPCSTR gameDirectory)
 #else
 void Menu::startGame(struct s_ExecutablePath path) {
     if (!this->m_inGame) {
+        std::cerr << "[Menu] starting game: " << path.file << " from " << path.path << std::endl;
+        m_launching = true;
+        m_launchError = "";
+
         this->m_processId = spawnProcess(path.path, path.file);
-        this->m_inGame = true;
+
+        if (this->m_processId == -1) {
+            std::cerr << "[Menu] failed to start game: fork failed" << std::endl;
+            m_launching = false;
+            m_launchTime = current_ticks();
+            m_launchError = "Failed to start game — see terminal for details";
+        } else {
+            std::cerr << "[Menu] game process spawned (PID: " << this->m_processId << ")" << std::endl;
+            this->m_inGame = true;
+            this->m_launchTime = current_ticks();
+        }
     }
 }
 #endif
@@ -481,7 +560,19 @@ void Menu::checkGameExit()
             m_gameData.setHighScore(highScore);
         }
 #else
-        if (! processRunning(this->m_processId)) {
+        if (! processRunning(this->m_processId, m_lastExitCode)) {
+            unsigned int runTime = current_ticks() - m_launchTime;
+            if (m_lastExitCode != 0) {
+                std::cerr << "[Menu] game crashed: " << this->m_button->config.title()
+                          << " (PID: " << this->m_processId << ", exit code: " << m_lastExitCode
+                          << ", ran for " << runTime << "ms)" << std::endl;
+                m_launchError = this->m_button->config.title() + " crashed (exit code: " + std::to_string(m_lastExitCode) + ")";
+                m_launchTime = current_ticks();
+            } else {
+                std::cerr << "[Menu] game exited normally: " << this->m_button->config.title()
+                          << " (PID: " << this->m_processId << ", ran for " << runTime << "ms)" << std::endl;
+            }
+            m_launching = false;
             this->m_inGame = false;
             int highScore = 0;
             m_gameData.setEndTime(time(0));

@@ -8,3 +8,5 @@ games/*
 **/*.o
 ArcadeMachine
 **/.DS_Store
+games/
+games/

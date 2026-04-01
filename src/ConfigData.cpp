@@ -7,8 +7,14 @@
 #include <sys/types.h>
 #include <exception>
 
+#if __cplusplus >= 201703L
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#define _LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
+#endif
 
 /**
 * @brief Construct a new Config Data object
@@ -18,6 +24,48 @@ namespace fs = std::experimental::filesystem;
 ConfigData::ConfigData(std::string configFile)
 {
     collectConfigData(readTxt(openFile(configFile)));
+
+    if (this->m_title.empty())
+        std::cerr << "[Config] missing field 'title' in: " << configFile << std::endl;
+    if (this->m_image.empty())
+        std::cerr << "[Config] missing field 'image' in: " << configFile << std::endl;
+}
+
+void ConfigData::setFolder(std::string &dir)
+{
+    m_folder = dir;
+
+    fs::path buildsPath = fs::path(dir) / "builds";
+
+    if (!fs::exists(buildsPath) || !fs::is_directory(buildsPath))
+    {
+        std::cerr << "[Config] no builds/ directory: " << dir << std::endl;
+        return;
+    }
+
+    bool hasLinuxArm = false, hasLinuxX86 = false, hasWindows = false;
+
+    for (const auto &entry : fs::directory_iterator(buildsPath))
+    {
+        std::string name = entry.path().filename().string();
+        if (name == "linux-arm.out")  hasLinuxArm = true;
+        if (name == "linux-x86.out")  hasLinuxX86 = true;
+        if (name == "windows-x86.exe") hasWindows  = true;
+    }
+
+    if (!hasLinuxArm && !hasLinuxX86 && !hasWindows)
+    {
+        std::cerr << "[Config] builds/ is empty: " << dir << std::endl;
+        return;
+    }
+
+    std::string platforms = "";
+    if (hasLinuxArm) platforms += "Linux ARM, ";
+    if (hasLinuxX86) platforms += "Linux x86, ";
+    if (hasWindows)  platforms += "Windows, ";
+    platforms = platforms.substr(0, platforms.size() - 2); // trim trailing ", "
+
+    std::cerr << "[Config] " << m_title << " supports: " << platforms << std::endl;
 }
 
 /**
@@ -34,7 +82,7 @@ std::ifstream ConfigData::openFile(std::string file)
 
     if(configFile.fail())
     {
-        std::cerr << "Error Opening File" << std::endl;
+        std::cerr << "[Config] failed to open file: " << file << std::endl;
         exit(1);
     }
 
@@ -141,23 +189,29 @@ bool ConfigData::getFromGit(std::string url, const char* dir)
 {
     // info struct lets us query the directory to see if it exists
     struct stat info;
-    if (stat(dir, &info) != 0)
+    bool isPull = (stat(dir, &info) == 0 && (info.st_mode & S_IFDIR));
+
+    if (isPull)
     {
-        // cant access dir -- clone from scratch
-        system(("git clone " + url + " " + dir).c_str());
-    }
-    else if (info.st_mode &S_IFDIR)
-    {
-        // dir exists -- pull instead
+        std::cerr << "[Git] pulling: " << url << " → " << dir << std::endl;
         system(("git -C " + std::string(dir) + " pull " + url).c_str());
     }
     else
     {
-        // dir does not exist -- clone from scratch
+        std::cerr << "[Git] cloning: " << url << " → " << dir << std::endl;
         system(("git clone " + url + " " + dir).c_str());
     }
 
-    return true;
+    // Verify the directory actually exists after the git operation
+    struct stat checkInfo;
+    bool success = (stat(dir, &checkInfo) == 0 && (checkInfo.st_mode & S_IFDIR));
+
+    if (success)
+        std::cerr << "[Git] " << (isPull ? "pull" : "clone") << " succeeded: " << dir << std::endl;
+    else
+        std::cerr << "[Git] " << (isPull ? "pull" : "clone") << " failed: " << dir << std::endl;
+
+    return success;
 }
 
 /**

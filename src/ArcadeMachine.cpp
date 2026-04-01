@@ -342,15 +342,55 @@ void ArcadeMachine::playArcadeTeamIntro()
 */
 void ArcadeMachine::playSplashKitIntro()
 {
-    // Pull the most recent version of the arcade-games repo.
-    do
+    const int MAX_RETRIES = 3;
+    const int RETRY_DELAY_MS = 30000;
+
+    for (int attempt = 1; attempt <= MAX_RETRIES; attempt++)
     {
-        // Draw SplashKit productions screen
-        this->m_introSplashkit.drawTitlePage();
-        draw_text("Loading...", COLOR_SLATE_GRAY, "font_text", 60, ARCADE_MACHINE_RES_X / 2 - 100, ARCADE_MACHINE_RES_Y / 2 + 350);
+        // Show attempt status on screen and terminal
+        std::string attemptMsg = "Connecting... (attempt " + std::to_string(attempt) + "/" + std::to_string(MAX_RETRIES) + ")";
+        std::cerr << "[Git] " << attemptMsg << std::endl;
+
+        process_events();
+        clear_screen();
+        m_introSplashkit.drawTitlePage();
+        draw_text(attemptMsg, COLOR_SLATE_GRAY, "font_text", 40, ARCADE_MACHINE_RES_X / 2 - 220, ARCADE_MACHINE_RES_Y / 2 + 350);
         refresh_screen();
-        
-    } while (!this->m_config.getFromGit("https://github.com/thoth-tech/arcade-games.git", "games"));
+
+        if (this->m_config.getFromGit("https://github.com/thoth-tech/arcade-games.git", "games"))
+        {
+            std::cerr << "[Git] games loaded successfully on attempt " << attempt << std::endl;
+            return;
+        }
+
+        // This attempt failed
+        if (attempt < MAX_RETRIES)
+        {
+            std::string retryMsg = "Failed. Retrying in 30 seconds... (" + std::to_string(attempt) + "/" + std::to_string(MAX_RETRIES) + ")";
+            std::cerr << "[Git] attempt " << attempt << " failed. Retrying in 30 seconds..." << std::endl;
+
+            process_events();
+            clear_screen();
+            m_introSplashkit.drawTitlePage();
+            draw_text(retryMsg, COLOR_RED, "font_text", 40, ARCADE_MACHINE_RES_X / 2 - 300, ARCADE_MACHINE_RES_Y / 2 + 350);
+            refresh_screen();
+            delay(RETRY_DELAY_MS);
+        }
+    }
+
+    // All retries failed — show error on screen and terminal, then exit
+    std::string failMsg1 = "Failed to load games after " + std::to_string(MAX_RETRIES) + " attempts.";
+    std::string failMsg2 = "Check network connection and restart.";
+    std::cerr << "[Git] " << failMsg1 << " Exiting." << std::endl;
+
+    process_events();
+    clear_screen();
+    m_introSplashkit.drawTitlePage();
+    draw_text(failMsg1, COLOR_RED, "font_text", 40, ARCADE_MACHINE_RES_X / 2 - 300, ARCADE_MACHINE_RES_Y / 2 + 320);
+    draw_text(failMsg2, COLOR_RED, "font_text", 40, ARCADE_MACHINE_RES_X / 2 - 280, ARCADE_MACHINE_RES_Y / 2 + 370);
+    refresh_screen();
+    delay(5000);
+    exit(EXIT_FAILURE);
 }
 
 /**

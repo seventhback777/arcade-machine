@@ -52,7 +52,7 @@ Button::Button(Color c, float x, float y, int xCell, int yCell, float scale)
     sprite_set_x(this->m_btn, this->m_x - this->m_centreX);
     sprite_set_y(this->m_btn, this->m_y - this->m_centreY);
     // store the window centre point of button as location
-    this->m_btnLocation = center_point(this->m_btn);
+    this->m_btnLocation = point_at(this->m_x, this->m_y);
     // scale the sprite
     sprite_set_scale(this->m_btn, scale);
 }

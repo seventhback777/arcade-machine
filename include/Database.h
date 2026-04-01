@@ -15,7 +15,7 @@
 // SplashKit provides the real API so no stubs are needed.
 // TODO: Rewrite Database.h using raw SQLite3 (-lsqlite3) to restore functionality.
 // ---------------------------------------------------------------------------
-#ifdef _WIN32
+#if 1
 struct database {};
 struct query_result {};
 inline database open_database(std::string, std::string) { return {}; }

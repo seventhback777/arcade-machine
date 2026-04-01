@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <cstring>
 #include <exception>
 
 #if __cplusplus >= 201703L

@@ -4,9 +4,7 @@ logs/
 **/*.exe
 **/*.out*
 resources/databases/*
-games/*
+games/
 **/*.o
 ArcadeMachine
 **/.DS_Store
-games/
-games/

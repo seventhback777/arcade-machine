@@ -36,12 +36,6 @@ private:
     PROCESS_INFORMATION m_processInfo;
     // Unsigned int to store exit info
     DWORD m_exitCode;
-    // Holds the game path of selected game
-    LPCSTR m_gamePath;
-    // Holds the executable of selected game
-    LPSTR m_gameExe;
-    // Holds the game directory of selected game
-    LPCSTR m_gameDir;
     // m_handle for game window.
     HWND m_handle;
 #else
@@ -79,6 +73,14 @@ private:
 
     // Determines when game has started.
     bool m_gameStarted = false;
+    // True from launch attempt until confirmed running or failed.
+    bool m_launching = false;
+    // Timestamp (ms) when m_inGame was set — used to detect crashes.
+    unsigned int m_launchTime = 0;
+    // Holds error message to display after launch failure or crash.
+    std::string m_launchError = "";
+    // Exit code of last game process (0 = normal, non-zero = crash).
+    int m_lastExitCode = 0;
     // Starting position of button x.
     const int m_posX = 700;
     // Position of button y.

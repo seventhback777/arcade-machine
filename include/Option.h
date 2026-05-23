@@ -2,11 +2,11 @@
 #define ARCADE_MACHINE_OPTION_H
 
 #include "AboutScreen.h"
+#include "Configuration.h"
 #include "splashkit.h"
 #include <string>
 #include "GridLayout.h"
 #include "Button.h"
-#include "ArcadeMachine.h"
 #include "Selector.h"
 #include "OptionsScreenButton.h"
 #include "Audio.h"
@@ -34,6 +34,7 @@ private:
 
 public:
     Option();
+    ~Option();
 
     void createOptionsButtons();
     void drawOptionsMenu();

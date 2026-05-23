@@ -3,8 +3,6 @@
 #include "Configuration.h"
 #include <regex>
 #include <iostream>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <cstring>
 #include <exception>
 
@@ -188,24 +186,23 @@ void ConfigData::collectJsonData(json json_configs)
 */
 bool ConfigData::getFromGit(std::string url, const char* dir)
 {
-    // info struct lets us query the directory to see if it exists
-    struct stat info;
-    bool isPull = (stat(dir, &info) == 0 && (info.st_mode & S_IFDIR));
+    fs::path dirPath(dir);
+    bool isPull = fs::is_directory(dirPath) && fs::exists(dirPath / ".git");
+
+    int exitCode;
 
     if (isPull)
     {
         std::cerr << "[Git] pulling: " << url << " → " << dir << std::endl;
-        system(("git -C " + std::string(dir) + " pull " + url).c_str());
+        exitCode = system(("git -C " + std::string(dir) + " pull " + url).c_str());
     }
     else
     {
         std::cerr << "[Git] cloning: " << url << " → " << dir << std::endl;
-        system(("git clone " + url + " " + dir).c_str());
+        exitCode = system(("git clone " + url + " " + dir).c_str());
     }
 
-    // Verify the directory actually exists after the git operation
-    struct stat checkInfo;
-    bool success = (stat(dir, &checkInfo) == 0 && (checkInfo.st_mode & S_IFDIR));
+    bool success = (exitCode == 0);
 
     if (success)
         std::cerr << "[Git] " << (isPull ? "pull" : "clone") << " succeeded: " << dir << std::endl;

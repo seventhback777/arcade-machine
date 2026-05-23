@@ -38,7 +38,7 @@ public:
         if (key_typed(LEFT_KEY))
         {
             --_rating;
-            if (_rating < 0)
+            if (_rating < 1)
                 _rating = _maxRating;
             updateGrid();
         }

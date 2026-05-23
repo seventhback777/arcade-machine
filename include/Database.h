@@ -9,6 +9,30 @@
 #include <map>
 #include <tuple>
 
+// ---------------------------------------------------------------------------
+// TEMPORARY: SplashKit database API is missing on Windows builds.
+// These stubs allow the project to compile on Windows. On Linux/RPi,
+// SplashKit provides the real API so no stubs are needed.
+// TODO: Rewrite Database.h using raw SQLite3 (-lsqlite3) to restore functionality.
+// ---------------------------------------------------------------------------
+#if 1
+struct database {};
+struct query_result {};
+inline database open_database(std::string, std::string) { return {}; }
+inline void free_database(database) {}
+inline query_result run_sql(database, std::string) { return {}; }
+inline bool query_success(query_result) { return false; }
+inline bool has_row(query_result) { return false; }
+inline bool get_next_row(query_result) { return false; }
+inline void free_all_query_results() {}
+inline int query_column_count(query_result) { return 0; }
+inline std::string query_column_for_string(query_result, int) { return ""; }
+inline double query_column_for_double(query_result, int) { return 0.0; }
+inline int query_column_for_int(query_result, int) { return 0; }
+inline std::string query_type_of_col(query_result, int) { return "NULL"; }
+#endif
+// ---------------------------------------------------------------------------
+
 class Database {
     private:
         std::string m_databaseName;

@@ -32,6 +32,9 @@ class Helper {
         string getFolderName(string entryPath)
         {
             string dir  = fs::path(entryPath).remove_filename().generic_string();
+            // Remove trailing slash to prevent double-slash when concatenating paths later
+            if (!dir.empty() && (dir.back() == '/' || dir.back() == '\\'))
+                dir.pop_back();
             std::cout << "Game-Directory Path: " << dir << "\n";
             return dir;
         }
@@ -46,6 +49,12 @@ class Helper {
         {
             vector<string> files;
 
+            if (!fs::exists(dir) || !fs::is_directory(dir))
+            {
+                std::cerr << "Warning: Games directory not found: " << dir << "\n";
+                return files;
+            }
+
             for (const auto & entry : fs::recursive_directory_iterator(dir))
             {
                 if (entry.path().filename() == "config.txt")
@@ -54,6 +63,8 @@ class Helper {
                     files.push_back(entry.path().generic_string());
                 }
             }
+
+            std::cerr << "[Helper] found " << files.size() << " config files in " << dir << std::endl;
 
             return files;
         }

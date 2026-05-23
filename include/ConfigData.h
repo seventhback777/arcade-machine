@@ -63,7 +63,7 @@ public:
 
     //Setters:
     auto setId(int &i) { m_id = i; }
-    auto setFolder(std::string &dir) { m_folder = dir; }
+    void setFolder(std::string &dir);
     // Getters:
     auto id()            const -> const int&         { return m_id;            }
     auto repo()          const -> const std::string& { return m_repo;          }

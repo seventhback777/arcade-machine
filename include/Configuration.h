@@ -28,4 +28,13 @@
 #define ARCADE_MACHINE_BINARY_EXT ".out"
 #endif
 
+
+// Grid layout dimensions; guarded to prevent redefinition if ArcadeMachine.h is also included
+#ifndef ROWS
+#define ROWS 7
+#endif
+#ifndef COLS
+#define COLS 15
+#endif
+
 #endif

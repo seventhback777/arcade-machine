@@ -5,6 +5,9 @@
 #include <iostream>
 #include <cstring>
 #include <exception>
+#ifndef _WIN32
+#include <sys/wait.h>
+#endif
 
 #if __cplusplus >= 201703L
 #include <filesystem>
@@ -202,7 +205,11 @@ bool ConfigData::getFromGit(std::string url, const char* dir)
         exitCode = system(("git clone " + url + " " + dir).c_str());
     }
 
+#ifdef _WIN32
     bool success = (exitCode == 0);
+#else
+    bool success = WIFEXITED(exitCode) && (WEXITSTATUS(exitCode) == 0);
+#endif
 
     if (success)
         std::cerr << "[Git] " << (isPull ? "pull" : "clone") << " succeeded: " << dir << std::endl;
